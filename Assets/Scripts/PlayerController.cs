@@ -1,3 +1,4 @@
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -45,7 +46,7 @@ public class PlayerController : MonoBehaviour
             velocity.x += playerInput.x * acceleration * Time.deltaTime;
             velocity.x = Mathf.Clamp(velocity.x, -maxSpeed, maxSpeed);
         }
-        else if (Mathf.Abs(velocity.x) > 0)
+        else if (Mathf.Abs(velocity.x) > 0.005f)
         {
             velocity.x += -Mathf.Sign(velocity.x) * deceleration * Time.deltaTime;
         }
@@ -57,13 +58,12 @@ public class PlayerController : MonoBehaviour
         body.linearVelocity = velocity;
     }
 
-    private void PlayerMovement()
-    {
-        
-    }
-
     public bool IsWalking()
     {
+        if (playerInput.x != 0)
+        {
+            return true;
+        }
         return false;
     }
     public bool IsGrounded()
@@ -73,6 +73,10 @@ public class PlayerController : MonoBehaviour
 
     public FacingDirection GetFacingDirection()
     {
+        if (playerInput.x > 0)
+        {
+            return FacingDirection.right;
+        }
         return FacingDirection.left;
     }
 }
