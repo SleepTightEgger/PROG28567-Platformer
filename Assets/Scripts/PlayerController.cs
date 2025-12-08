@@ -17,6 +17,8 @@ public class PlayerController : MonoBehaviour
 
     Vector2 playerInput = new Vector2();
 
+    FacingDirection lastFacingDirection = FacingDirection.right;
+
     public enum FacingDirection
     {
         left, right
@@ -58,9 +60,14 @@ public class PlayerController : MonoBehaviour
         body.linearVelocity = velocity;
     }
 
+    private void PlayerMovement()
+    {
+        
+    }
+
     public bool IsWalking()
     {
-        if (playerInput.x != 0)
+        if (velocity.x != 0)
         {
             return true;
         }
@@ -68,6 +75,11 @@ public class PlayerController : MonoBehaviour
     }
     public bool IsGrounded()
     {
+        RaycastHit2D hit = Physics2D.BoxCast(transform.position, Vector2.one, 0, Vector2.down, 1);
+        if (hit.collider != null)
+        {
+            return true;
+        }
         return false;
     }
 
@@ -75,8 +87,13 @@ public class PlayerController : MonoBehaviour
     {
         if (playerInput.x > 0)
         {
-            return FacingDirection.right;
+            lastFacingDirection = FacingDirection.right;
         }
-        return FacingDirection.left;
+        if (playerInput.x < 0)
+        {
+            lastFacingDirection = FacingDirection.left;
+        }
+
+        return lastFacingDirection;
     }
 }
