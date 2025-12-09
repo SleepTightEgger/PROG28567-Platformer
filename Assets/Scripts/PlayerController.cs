@@ -1,3 +1,4 @@
+using System.Collections;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -21,8 +22,10 @@ public class PlayerController : MonoBehaviour
     public float apexTime = 0.5f;
 
     public float terminalSpeed = 0.01f;
+    public float coyoteTime = 0.5f;
 
     private bool jumpPressed = false;
+    private bool jumping;
 
     Vector2 playerInput = new Vector2();
 
@@ -80,19 +83,35 @@ public class PlayerController : MonoBehaviour
             velocity.x = 0;
         }
 
-        if (jumpPressed && IsGrounded())
+        if (jumpPressed && (IsGrounded() || coyoteTime > 0))
         {
-            
             velocity.y = jumpVelocity;
+            coyoteTime = 0;
+            jumping = true;
         }
-        
+
+        if (IsGrounded())
+        {
+            coyoteTime = 0f;
+        }
+        else
+        {
+            if (velocity.y < 0 && coyoteTime == 0f && !jumping)
+            {
+                coyoteTime = 0.5f;
+            }
+            else if (velocity.y < 0)
+            {
+                coyoteTime -= Time.deltaTime;
+                coyoteTime = Mathf.Clamp(coyoteTime, 0f, 0.5f);
+            }
+        }
 
         body.linearVelocity = velocity;
     }
 
     public void Gravity()
     {
-        Debug.Log(velocity.y);
         if (!IsGrounded())
         {
             velocity.y += gravity * Time.deltaTime;
@@ -100,6 +119,7 @@ public class PlayerController : MonoBehaviour
         }
         else if (velocity.y < 0)
         {
+            jumping = false;
             velocity.y = 0;
         }
     }
