@@ -14,6 +14,13 @@ public class PlayerController : MonoBehaviour
     private float decelerationTime = 1f;
 
     private float maxSpeed = 10f;
+    private float gravity = -20f;
+
+    private float jumpVelocity = 10f;
+    private float apexHeight = 3f;
+    private float apexTime = 0.5f;
+
+    private bool jumpPressed = false;
 
     Vector2 playerInput = new Vector2();
 
@@ -29,6 +36,9 @@ public class PlayerController : MonoBehaviour
     {
         acceleration = maxSpeed/accelerationTime;
         deceleration = maxSpeed/decelerationTime;
+
+        gravity = -2 * apexHeight / (Mathf.Pow(apexTime, 2));
+        jumpVelocity = 2 * apexHeight / apexTime;
     }
 
     // Update is called once per frame
@@ -38,7 +48,18 @@ public class PlayerController : MonoBehaviour
         // then passed in the to the MovementUpdate which should
         // manage the actual movement of the character.
         playerInput.x = Input.GetAxisRaw("Horizontal");
+        playerInput.y = Input.GetButtonDown("Jump") ? 1 : 0;
+        if (playerInput.y == 1)
+        {
+            jumpPressed = true;
+        }
+        else
+        {
+            jumpPressed = false;
+        }
+
         MovementUpdate(playerInput);
+        Gravity();
     }
 
     private void MovementUpdate(Vector2 playerInput)
@@ -57,12 +78,26 @@ public class PlayerController : MonoBehaviour
             velocity.x = 0;
         }
 
+        if (jumpPressed && IsGrounded())
+        {
+            
+            velocity.y = jumpVelocity;
+        }
+        
+
         body.linearVelocity = velocity;
     }
 
-    private void PlayerMovement()
+    public void Gravity()
     {
-        
+        if (!IsGrounded())
+        {
+            velocity.y += gravity * Time.deltaTime;
+        }
+        else if (velocity.y < 0)
+        {
+            velocity.y = 0;
+        }
     }
 
     public bool IsWalking()
@@ -75,7 +110,7 @@ public class PlayerController : MonoBehaviour
     }
     public bool IsGrounded()
     {
-        RaycastHit2D hit = Physics2D.BoxCast(transform.position, Vector2.one, 0, Vector2.down, 1);
+        RaycastHit2D hit = Physics2D.BoxCast(transform.position, Vector2.one, 0, Vector2.down, 0.2f);
         if (hit.collider != null)
         {
             return true;
