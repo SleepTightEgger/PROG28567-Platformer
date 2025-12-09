@@ -1702,10 +1702,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   body: {fileID: 1433354318}
-  gravity: 0
-  jumpVelocity: 10
-  apexHeight: 1
-  apexTime: -0.5
+  apexHeight: 3
+  apexTime: 0.5
+  terminalSpeed: -30
+  coyoteTime: 0.5
 --- !u!4 &1433354315
 Transform:
   m_ObjectHideFlags: 0

@@ -21,7 +21,7 @@ public class PlayerController : MonoBehaviour
     public float apexHeight = 3f;
     public float apexTime = 0.5f;
 
-    public float terminalSpeed = 0.01f;
+    public float terminalSpeed = -30f;
     public float coyoteTime = 0.5f;
 
     private bool jumpPressed = false;
