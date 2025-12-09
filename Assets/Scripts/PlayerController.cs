@@ -17,8 +17,10 @@ public class PlayerController : MonoBehaviour
     private float gravity = -20f;
 
     private float jumpVelocity = 10f;
-    private float apexHeight = 3f;
-    private float apexTime = 0.5f;
+    public float apexHeight = 3f;
+    public float apexTime = 0.5f;
+
+    public float terminalSpeed = 0.01f;
 
     private bool jumpPressed = false;
 
@@ -90,9 +92,11 @@ public class PlayerController : MonoBehaviour
 
     public void Gravity()
     {
+        Debug.Log(velocity.y);
         if (!IsGrounded())
         {
             velocity.y += gravity * Time.deltaTime;
+            velocity.y = Mathf.Clamp(velocity.y, terminalSpeed, -terminalSpeed);
         }
         else if (velocity.y < 0)
         {
