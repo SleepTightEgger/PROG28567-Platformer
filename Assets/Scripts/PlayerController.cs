@@ -12,7 +12,7 @@ public class PlayerController : MonoBehaviour
     private float acceleration;
     private float deceleration;
     private float accelerationTime = 1f;
-    private float decelerationTime = 1f;
+    private float decelerationTime = 0.5f;
 
     private float maxSpeed = 10f;
     private float gravity = -20f;
@@ -26,6 +26,14 @@ public class PlayerController : MonoBehaviour
 
     private bool jumpPressed = false;
     private bool jumping;
+
+    private bool dashRequested = false;
+    private float dashVelocity = 10f;
+    private float dashTime = 0.25f;
+    private bool isDashing = false;
+    private float dashCooldown;
+    private bool canDash = true;
+    private bool airDash = true;
 
     Vector2 playerInput = new Vector2();
 
@@ -63,24 +71,29 @@ public class PlayerController : MonoBehaviour
             jumpPressed = false;
         }
 
+        dashRequested = Input.GetButtonDown("Fire3") ? true : false;
+
         MovementUpdate(playerInput);
         Gravity();
     }
 
     private void MovementUpdate(Vector2 playerInput)
     {
-        if (playerInput.x != 0)
+        if (!isDashing)
         {
-            velocity.x += playerInput.x * acceleration * Time.deltaTime;
-            velocity.x = Mathf.Clamp(velocity.x, -maxSpeed, maxSpeed);
-        }
-        else if (Mathf.Abs(velocity.x) > 0.005f)
-        {
-            velocity.x += -Mathf.Sign(velocity.x) * deceleration * Time.deltaTime;
-        }
-        else
-        {
-            velocity.x = 0;
+            if (playerInput.x != 0)
+            {
+                velocity.x += playerInput.x * acceleration * Time.deltaTime;
+                velocity.x = Mathf.Clamp(velocity.x, -maxSpeed, maxSpeed);
+            }
+            else if (Mathf.Abs(velocity.x) > 0.005f)
+            {
+                velocity.x += -Mathf.Sign(velocity.x) * deceleration * Time.deltaTime;
+            }
+            else
+            {
+                velocity.x = 0;
+            }
         }
 
         if (jumpPressed && (IsGrounded() || coyoteTime > 0))
@@ -90,9 +103,39 @@ public class PlayerController : MonoBehaviour
             jumping = true;
         }
 
+        if (dashRequested && canDash && airDash)
+        {
+            dashVelocity = (lastFacingDirection == FacingDirection.left) ? -10 : 10;
+            dashTime = 0.25f;
+            isDashing = true;
+            velocity = Vector2.zero;
+            velocity.x = dashVelocity;
+            if (!IsGrounded())
+            {
+                airDash = false;
+            }
+            StartCoroutine(DashCooldown());
+        }
+
+        if (isDashing)
+        {
+            dashTime -= Time.deltaTime;
+            dashTime = Mathf.Clamp(dashTime, 0, 0.25f);
+
+            if (dashTime == 0)
+            {
+                isDashing = false;
+                velocity.x = (lastFacingDirection == FacingDirection.left) ? -0.75f : 0.75f;
+            }
+        }
+
         if (IsGrounded())
         {
             coyoteTime = 0f;
+            if (!airDash)
+            {
+                airDash = true;
+            }
         }
         else
         {
@@ -112,7 +155,7 @@ public class PlayerController : MonoBehaviour
 
     public void Gravity()
     {
-        if (!IsGrounded())
+        if (!IsGrounded() && !isDashing)
         {
             velocity.y += gravity * Time.deltaTime;
             velocity.y = Mathf.Clamp(velocity.y, terminalSpeed, -terminalSpeed);
@@ -134,7 +177,7 @@ public class PlayerController : MonoBehaviour
     }
     public bool IsGrounded()
     {
-        RaycastHit2D hit = Physics2D.BoxCast(transform.position, Vector2.one, 0, Vector2.down, 0.2f);
+        RaycastHit2D hit = Physics2D.BoxCast(transform.position, new Vector2(0.75f, 1), 0, Vector2.down, 0.2f);
         if (hit.collider != null)
         {
             return true;
@@ -144,15 +187,30 @@ public class PlayerController : MonoBehaviour
 
     public FacingDirection GetFacingDirection()
     {
-        if (playerInput.x > 0)
+        if (!isDashing)
         {
-            lastFacingDirection = FacingDirection.right;
-        }
-        if (playerInput.x < 0)
-        {
-            lastFacingDirection = FacingDirection.left;
+            if (playerInput.x > 0)
+            {
+                lastFacingDirection = FacingDirection.right;
+            }
+            if (playerInput.x < 0)
+            {
+                lastFacingDirection = FacingDirection.left;
+            }
         }
 
         return lastFacingDirection;
+    }
+
+    IEnumerator DashCooldown()
+    {
+        canDash = false;
+        dashCooldown = 0.5f;
+        while (dashCooldown > 0)
+        {
+            dashCooldown -= Time.deltaTime;
+            yield return null;
+        }
+        canDash = true;
     }
 }
