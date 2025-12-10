@@ -24,13 +24,13 @@ public class PlayerController : MonoBehaviour
     public float terminalSpeed = -30f;
     public float coyoteTime = 0.5f;
 
-    private bool jumpPressed = false;
+    public bool jumpPressed = false;
     private bool jumping;
 
     private bool dashRequested = false;
     private float dashVelocity = 10f;
     private float dashTime = 0.25f;
-    private bool isDashing = false;
+    public bool isDashing = false;
     private float dashCooldown;
     private bool canDash = true;
     private bool airDash = true;
@@ -61,9 +61,13 @@ public class PlayerController : MonoBehaviour
         // then passed in the to the MovementUpdate which should
         // manage the actual movement of the character.
         playerInput.x = Input.GetAxisRaw("Horizontal");
-        playerInput.y = Input.GetButtonDown("Jump") ? 1 : 0;
+        playerInput.y = Input.GetButton("Jump") ? 1 : 0;
         if (playerInput.y == 1)
         {
+            if (!jumpPressed)
+            {
+                apexHeight = 2f;
+            }
             jumpPressed = true;
         }
         else
@@ -98,6 +102,12 @@ public class PlayerController : MonoBehaviour
 
         if (jumpPressed && (IsGrounded() || coyoteTime > 0))
         {
+            apexHeight += 2f * Time.deltaTime;
+            apexHeight = Mathf.Clamp(apexHeight, 2f, 4f);
+        }
+        if (Input.GetButtonUp("Jump") && IsGrounded())
+        {
+            jumpVelocity = 2 * apexHeight / apexTime;
             velocity.y = jumpVelocity;
             coyoteTime = 0;
             jumping = true;
@@ -169,7 +179,7 @@ public class PlayerController : MonoBehaviour
 
     public bool IsWalking()
     {
-        if (velocity.x != 0)
+        if (velocity.x != 0 && !isDashing)
         {
             return true;
         }
