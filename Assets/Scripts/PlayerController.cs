@@ -9,15 +9,15 @@ public class PlayerController : MonoBehaviour
 
     public Rigidbody2D body;
 
-    private float acceleration;
-    private float deceleration;
-    private float accelerationTime = 1f;
-    private float decelerationTime = 0.5f;
+    public float acceleration;
+    public float deceleration;
+    public float accelerationTime = 1f;
+    public float decelerationTime = 0.5f;
 
-    private float maxSpeed = 10f;
-    private float gravity = -20f;
+    public float maxSpeed = 10f;
+    public float gravity = -20f;
 
-    private float jumpVelocity = 10f;
+    public float jumpVelocity = 10f;
     public float apexHeight = 3f;
     public float apexTime = 0.5f;
 
@@ -34,6 +34,9 @@ public class PlayerController : MonoBehaviour
     private float dashCooldown;
     private bool canDash = true;
     private bool airDash = true;
+
+    public bool shockwave = false;
+    public GameObject shockwaveSlash;
 
     Vector2 playerInput = new Vector2();
 
@@ -76,12 +79,24 @@ public class PlayerController : MonoBehaviour
         }
 
         dashRequested = Input.GetButtonDown("Fire3") ? true : false;
+        shockwave = Input.GetMouseButtonDown(0) ? true : false;
 
-        MovementUpdate(playerInput);
+        MovementUpdate();
         Gravity();
+        Shockwave();
     }
 
-    private void MovementUpdate(Vector2 playerInput)
+    private void MovementUpdate()
+    {
+        WalkingLogic();
+        JumpingLogic();
+        DashLogic();
+        CoyoteTimeLogic();
+
+        body.linearVelocity = velocity;
+    }
+
+    public void WalkingLogic()
     {
         if (!isDashing)
         {
@@ -99,7 +114,10 @@ public class PlayerController : MonoBehaviour
                 velocity.x = 0;
             }
         }
+    }
 
+    public void JumpingLogic()
+    {
         if (jumpPressed && (IsGrounded() || coyoteTime > 0))
         {
             apexHeight += 2f * Time.deltaTime;
@@ -112,7 +130,10 @@ public class PlayerController : MonoBehaviour
             coyoteTime = 0;
             jumping = true;
         }
+    }
 
+    public void DashLogic()
+    {
         if (dashRequested && canDash && airDash)
         {
             dashVelocity = (lastFacingDirection == FacingDirection.left) ? -10 : 10;
@@ -138,7 +159,10 @@ public class PlayerController : MonoBehaviour
                 velocity.x = (lastFacingDirection == FacingDirection.left) ? -0.75f : 0.75f;
             }
         }
+    }
 
+    public void CoyoteTimeLogic()
+    {
         if (IsGrounded())
         {
             coyoteTime = 0f;
@@ -159,8 +183,16 @@ public class PlayerController : MonoBehaviour
                 coyoteTime = Mathf.Clamp(coyoteTime, 0f, 0.5f);
             }
         }
-
-        body.linearVelocity = velocity;
+    }
+    public void Shockwave()
+    {
+        if (shockwave)
+        {
+            GameObject sw = Instantiate(shockwaveSlash, transform.position, transform.rotation);
+            Vector2 direction = (lastFacingDirection == FacingDirection.left) ? Vector2.left : Vector2.right;
+            sw.GetComponent<shockwaveSlash>().body.AddForce(direction * 10, ForceMode2D.Impulse);
+            sw.GetComponent<shockwaveSlash>().direction = direction;
+        }
     }
 
     public void Gravity()

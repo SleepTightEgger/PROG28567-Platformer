@@ -9,13 +9,22 @@ public class PlayerVisuals : MonoBehaviour
     private readonly int isWalkingHash = Animator.StringToHash("IsWalking");
     private readonly int isGroundedHash = Animator.StringToHash("IsGrounded");
     private readonly int jumpWarmupHash = Animator.StringToHash("jumpPressed");
-    private readonly int dashingHash = Animator.StringToHash("isDashing");
+    private readonly int dashingTriggerHash = Animator.StringToHash("isDashing");
+    private readonly int shockwaveTriggerHash = Animator.StringToHash("shockwave");
     void Update()
     {
         animator.SetBool(isWalkingHash, playerController.IsWalking());
         animator.SetBool(isGroundedHash, playerController.IsGrounded());
         animator.SetBool(jumpWarmupHash, playerController.jumpPressed);
-        animator.SetBool(dashingHash, playerController.isDashing);
+
+        if (Input.GetButtonDown("Fire3"))
+        {
+            animator.SetTrigger(dashingTriggerHash);
+        }
+        if (Input.GetMouseButtonDown(0))
+        {
+            animator.SetTrigger(shockwaveTriggerHash);
+        }
 
         switch (playerController.GetFacingDirection())
         {

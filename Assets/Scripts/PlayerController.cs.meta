@@ -3,7 +3,9 @@ guid: 86a1ce42ea3e3dd44868493ae73ec06d
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - body: {instanceID: 0}
+  - shockwaveSlash: {fileID: 117855968438450836, guid: b005038832ad434488999cffd9bedb60, type: 3}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 
